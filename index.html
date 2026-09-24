@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anil Sharma — Full-Stack & AI Automation Developer</title>
+  <meta name="description" content="Portfolio of Anil Sharma, full-stack developer building web apps, software and AI automations." />
+  <script>document.documentElement.classList.replace("no-js", "js");</script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css?v=29" />
+</head>
+<body>
+  <!-- Preloader -->
+  <div class="preloader" aria-hidden="true">
+    <!-- Black background split into panels that slide away on exit -->
+    <div class="preloader__panels"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <canvas class="pl-stars"></canvas>
+    <div class="pl-floor"></div>
+    <div class="pl-scan"></div>
+
+    <div class="preloader__top">
+      <div class="preloader__name pl-anim" data-text="Anil Sharma.">Anil Sharma<span>.</span></div>
+    </div>
+
+    <!-- Spinning 3D code cube with orbit rings -->
+    <div class="pl-stage pl-anim">
+      <span class="pl-glow"></span>
+      <!-- Everything in here shares one 3D space and tilts with the mouse -->
+      <div class="cube-float">
+      <div class="cube-tilt">
+        <!-- Tool logos orbiting the cube in 3D -->
+        <div class="pl-sats">
+          <span class="sat" style="--a:0deg"><span class="sat__in"><img src="assets/tools/react.svg" alt="" draggable="false" /></span></span>
+          <span class="sat" style="--a:45deg"><span class="sat__in"><img src="assets/tools/nextjs.svg" alt="" draggable="false" /></span></span>
+          <span class="sat" style="--a:90deg"><span class="sat__in"><img src="assets/tools/nodejs.svg" alt="" draggable="false" /></span></span>
+          <span class="sat" style="--a:135deg"><span class="sat__in"><img src="assets/tools/mongodb.svg" alt="" draggable="false" /></span></span>
+          <span class="sat" style="--a:180deg"><span class="sat__in"><img src="assets/tools/openai.svg" alt="" draggable="false" /></span></span>
+          <span class="sat" style="--a:225deg"><span class="sat__in"><img src="assets/tools/claude.svg" alt="" draggable="false" /></span></span>
+          <span class="sat" style="--a:270deg"><span class="sat__in"><img src="assets/tools/python.svg" alt="" draggable="false" /></span></span>
+          <span class="sat" style="--a:315deg"><span class="sat__in"><img src="assets/tools/docker.svg" alt="" draggable="false" /></span></span>
+        </div>
+      <span class="pl-ring"></span>
+      <span class="pl-ring pl-ring--2"></span>
+      <div class="cube">
+        <div class="core"><span class="core__face core__face--front"></span><span class="core__face core__face--back"></span><span class="core__face core__face--right"></span><span class="core__face core__face--left"></span><span class="core__face core__face--top"></span><span class="core__face core__face--bottom"></span></div>
+        <span class="cube__face cube__face--front"><b class="cube__glyph">&lt;/&gt;</b></span>
+        <span class="cube__face cube__face--back"><b class="cube__glyph">AI</b></span>
+        <span class="cube__face cube__face--right"><b class="cube__glyph">{ }</b></span>
+        <span class="cube__face cube__face--left"><b class="cube__glyph">λ</b></span>
+        <span class="cube__face cube__face--top"><b class="cube__glyph">⚡</b></span>
+        <span class="cube__face cube__face--bottom"><b class="cube__glyph">#</b></span>
+      </div>
+      </div>
+      </div>
+    </div>
+
+    <div class="preloader__bottom">
+      <div class="preloader__log" id="bootLog"></div>
+      <div class="preloader__count"><span class="odo" id="loadCount"><span class="odo__col"><span class="odo__strip"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="odo__col"><span class="odo__strip"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="odo__col"><span class="odo__strip"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span></span>%</div>
+    </div>
+    <div class="pl-bar"><span></span></div>
+  </div>
+
+  <!-- Custom cursor -->
+  <div class="cursor" aria-hidden="true"></div>
+  <div class="cursor-ring" aria-hidden="true"><span class="cursor-ring__label"></span></div>
+
+  <!-- Scroll progress -->
+  <div class="progress" aria-hidden="true"></div>
+
+  <!-- Floating pill navigation -->
+  <nav class="nav" aria-label="Main">
+    <a href="#top" class="nav__link nav__brand"><span class="nav__dot"></span>Anil Sharma</a>
+    <a href="#services" class="nav__link">Services</a>
+    <a href="#work" class="nav__link">Work</a>
+    <a href="#process" class="nav__link">Process</a>
+    <a href="#contact" class="nav__link nav__cta">Get in touch</a>
+  </nav>
+
+  <main id="top">
+    <!-- ================= HERO ================= -->
+    <section class="hero">
+      <div class="hero__bg" aria-hidden="true">
+        <div class="hero__grid"></div>
+        <div class="hero__spot"></div>
+        <div class="blob blob--1"></div>
+        <div class="blob blob--2"></div>
+      </div>
+
+      <div class="badge hero__status">
+        <span class="pulse"></span> Available for new projects
+      </div>
+
+      <h1 class="hero__title">
+        <span class="line"><span class="line__inner">Anil Sharma builds</span></span>
+        <span class="line"><span class="line__inner">apps &amp; AI agents</span></span>
+        <!-- Rotating words: edit the comma-separated list in data-words -->
+        <span class="line"><span class="line__inner">that <span class="flip hl" data-words="think.,scale.,sell.,grow.,ship."><span class="flip__text">think.</span></span></span></span>
+      </h1>
+
+      <p class="hero__subtitle">
+        <strong>Full-stack developer &amp; AI automation engineer</strong> turning ideas into<br class="br-desktop" />
+        fast products and workflows that save hours every week.
+      </p>
+
+      <div class="hero__visual">
+        <div class="hero__photo">
+          <!-- Glow + orbit rings, layered behind the photo and centred on the head -->
+          <div class="hero__halo" aria-hidden="true">
+            <span class="halo__glow"></span>
+            <!-- Tool logos orbit on three rings: add/remove slots, files live in assets/tools -->
+            <span class="halo__orbit halo__orbit--1"><span class="halo__ring halo__ring--1">
+              <span class="tool-slot" style="--a:0deg"><span class="tool"><span class="tool__in"><img src="assets/tools/vscode.svg" alt="VS Code" title="VS Code" /></span></span></span>
+              <span class="tool-slot" style="--a:72deg"><span class="tool"><span class="tool__in"><img src="assets/tools/antigravity.svg" alt="Antigravity" title="Antigravity" /></span></span></span>
+              <span class="tool-slot" style="--a:144deg"><span class="tool"><span class="tool__in"><img src="assets/tools/github.svg" alt="GitHub" title="GitHub" /></span></span></span>
+              <span class="tool-slot" style="--a:216deg"><span class="tool"><span class="tool__in"><img src="assets/tools/cursor.svg" alt="Cursor" title="Cursor" /></span></span></span>
+              <span class="tool-slot" style="--a:288deg"><span class="tool"><span class="tool__in"><img src="assets/tools/gemini.svg" alt="Gemini" title="Gemini" /></span></span></span>
+            </span></span>
+            <span class="halo__orbit halo__orbit--2"><span class="halo__ring halo__ring--2">
+              <span class="tool-slot" style="--a:22deg"><span class="tool"><span class="tool__in"><img src="assets/tools/claude.svg" alt="Claude" title="Claude" /></span></span></span>
+              <span class="tool-slot" style="--a:67deg"><span class="tool"><span class="tool__in"><img src="assets/tools/openai.svg" alt="OpenAI" title="OpenAI" /></span></span></span>
+              <span class="tool-slot" style="--a:112deg"><span class="tool"><span class="tool__in"><img src="assets/tools/n8n.svg" alt="n8n" title="n8n" /></span></span></span>
+              <span class="tool-slot" style="--a:157deg"><span class="tool"><span class="tool__in"><img src="assets/tools/docker.svg" alt="Docker" title="Docker" /></span></span></span>
+              <span class="tool-slot" style="--a:202deg"><span class="tool"><span class="tool__in"><img src="assets/tools/mongodb.svg" alt="MongoDB" title="MongoDB" /></span></span></span>
+              <span class="tool-slot" style="--a:247deg"><span class="tool"><span class="tool__in"><img src="assets/tools/postman.svg" alt="Postman" title="Postman" /></span></span></span>
+              <span class="tool-slot" style="--a:292deg"><span class="tool"><span class="tool__in"><img src="assets/tools/postgresql.svg" alt="PostgreSQL" title="PostgreSQL" /></span></span></span>
+              <span class="tool-slot" style="--a:337deg"><span class="tool"><span class="tool__in"><img src="assets/tools/mysql.svg" alt="MySQL" title="MySQL" /></span></span></span>
+            </span></span>
+            <span class="halo__orbit halo__orbit--3"><span class="halo__ring halo__ring--3">
+              <span class="tool-slot" style="--a:15deg"><span class="tool"><span class="tool__in"><img src="assets/tools/react.svg" alt="React" title="React" /></span></span></span>
+              <span class="tool-slot" style="--a:45deg"><span class="tool"><span class="tool__in"><img src="assets/tools/nextjs.svg" alt="Next.js" title="Next.js" /></span></span></span>
+              <span class="tool-slot" style="--a:75deg"><span class="tool"><span class="tool__in"><img src="assets/tools/nodejs.svg" alt="Node.js" title="Node.js" /></span></span></span>
+              <span class="tool-slot" style="--a:105deg"><span class="tool"><span class="tool__in"><img src="assets/tools/python.svg" alt="Python" title="Python" /></span></span></span>
+              <span class="tool-slot" style="--a:135deg"><span class="tool"><span class="tool__in"><img src="assets/tools/typescript.svg" alt="TypeScript" title="TypeScript" /></span></span></span>
+              <span class="tool-slot" style="--a:165deg"><span class="tool"><span class="tool__in"><img src="assets/tools/javascript.svg" alt="JavaScript" title="JavaScript" /></span></span></span>
+              <span class="tool-slot" style="--a:195deg"><span class="tool"><span class="tool__in"><img src="assets/tools/tailwind.svg" alt="Tailwind CSS" title="Tailwind CSS" /></span></span></span>
+              <span class="tool-slot" style="--a:225deg"><span class="tool"><span class="tool__in"><img src="assets/tools/git.svg" alt="Git" title="Git" /></span></span></span>
+              <span class="tool-slot" style="--a:255deg"><span class="tool"><span class="tool__in"><img src="assets/tools/firebase.svg" alt="Firebase" title="Firebase" /></span></span></span>
+              <span class="tool-slot" style="--a:285deg"><span class="tool"><span class="tool__in"><img src="assets/tools/vercel.svg" alt="Vercel" title="Vercel" /></span></span></span>
+              <span class="tool-slot" style="--a:315deg"><span class="tool"><span class="tool__in"><img src="assets/tools/php.svg" alt="PHP" title="PHP" /></span></span></span>
+              <span class="tool-slot" style="--a:345deg"><span class="tool"><span class="tool__in"><img src="assets/tools/fastapi.svg" alt="FastAPI" title="FastAPI" /></span></span></span>
+            </span></span>
+          </div>
+          <!-- Replace assets/photo.png with your own cut-out portrait (transparent or white background) -->
+          <img src="assets/anil-portfolio.png" alt="Portrait of Anil Sharma" draggable="false"
+               onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'hero__placeholder',innerHTML:'<span>Add your photo<br><small>assets/photo.png</small></span>'}))" />
+        </div>
+
+
+        <a href="#contact" class="spin-badge" data-magnetic data-cursor="Hire me" aria-label="Open to work, get in touch">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <defs><path id="spinPath" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0" /></defs>
+            <text><textPath href="#spinPath" textLength="285">OPEN TO WORK ✦ LET'S BUILD ✦ OPEN TO WORK ✦ LET'S BUILD ✦</textPath></text>
+          </svg>
+          <span class="spin-badge__arrow">↗</span>
+        </a>
+      </div>
+
+      <a href="#about" class="scroll-hint" aria-label="Scroll down">
+        <span class="scroll-hint__line"></span>
+        Scroll
+      </a>
+    </section>
+
+    <!-- ================= MARQUEE ================= -->
+    <section class="marquee-band" aria-label="Tech stack">
+      <div class="marquee">
+        <div class="marquee__track">
+          <span>JavaScript</span><i>✦</i><span>TypeScript</span><i>✦</i><span>React</span><i>✦</i><span>Next.js</span><i>✦</i><span>Node.js</span><i>✦</i><span>Express</span><i>✦</i><span>Python</span><i>✦</i><span>FastAPI</span><i>✦</i>
+        </div>
+      </div>
+      <div class="marquee marquee--reverse">
+        <div class="marquee__track">
+          <span>OpenAI</span><i>●</i><span>Claude API</span><i>●</i><span>LangChain</span><i>●</i><span>n8n</span><i>●</i><span>MongoDB</span><i>●</i><span>PostgreSQL</span><i>●</i><span>Docker</span><i>●</i><span>Tailwind</span><i>●</i>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ABOUT ================= -->
+    <section id="about" class="section about">
+      <p class="eyebrow" data-reveal>(01) About</p>
+      <p class="about__text" data-scrub-words>
+        I'm a developer who turns ideas into fast, reliable products. From full-stack web apps
+        to AI agents that handle the boring work, I write clean code, ship quickly and care
+        about results your business can measure.
+      </p>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="stat__num"><span data-count="3">3</span>+</span>
+          <span class="stat__label">Years of experience</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num"><span data-count="30">30</span>+</span>
+          <span class="stat__label">Projects delivered</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num"><span data-count="20">20</span>+</span>
+          <span class="stat__label">Automations built</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num"><span data-count="100">100</span>%</span>
+          <span class="stat__label">Client satisfaction</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SERVICES ================= -->
+    <section id="services" class="section">
+      <p class="eyebrow" data-reveal>(02) Services</p>
+      <h2 class="section__title" data-split>What I do</h2>
+
+      <div class="bento">
+        <!-- 01 Full-stack: code types itself, app preview builds -->
+        <article class="bcard bcard--dev" data-reveal>
+          <div class="bcard__copy">
+            <span class="bcard__num">01 / Full-Stack</span>
+            <h3 class="bcard__title">Full-Stack Development</h3>
+            <p>Fast, scalable web apps from database to UI: APIs, dashboards, SaaS products and e-commerce.</p>
+            <ul class="service__tags"><li>React</li><li>Next.js</li><li>Node</li><li>SQL</li></ul>
+          </div>
+
+          <div class="devdemo" aria-hidden="true">
+            <div class="editor">
+              <div class="editor__bar"><i></i><i></i><i></i><span>App.jsx</span></div>
+<pre class="editor__code"><span class="cl"><b class="k">export default function</b> <b class="f">App</b>() {</span><span class="cl">  <b class="k">const</b> user = <b class="f">useAuth</b>();</span><span class="cl">  <b class="k">const</b> stats = <b class="f">useQuery</b>(<b class="s">"/api/stats"</b>);</span><span class="cl"></span><span class="cl">  <b class="k">return</b> (</span><span class="cl">    &lt;<b class="t">Dashboard</b> user={user}&gt;</span><span class="cl">      &lt;<b class="t">Chart</b> data={stats} /&gt;</span><span class="cl">    &lt;/<b class="t">Dashboard</b>&gt;</span><span class="cl">  );</span><span class="cl">}</span></pre>
+            </div>
+
+            <div class="preview">
+              <div class="pv preview__nav"><i></i><i></i><i></i></div>
+              <div class="pv preview__chart">
+                <svg viewBox="0 0 100 34" preserveAspectRatio="none"><polyline points="0,28 14,20 28,24 42,12 56,16 70,6 84,10 100,3" /></svg>
+              </div>
+              <div class="pv preview__cards"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 02 AI automation: live workflow -->
+        <article class="bcard bcard--ai" data-reveal>
+          <span class="bcard__num">02 / Automation</span>
+          <h3 class="bcard__title">AI Automation</h3>
+          <p>AI agents, chatbots and workflows with LLMs, n8n and custom integrations that remove manual work.</p>
+
+          <div class="flow" aria-hidden="true">
+            <div class="flow__line"><span class="flow__pulse"></span></div>
+            <div class="flow__node" style="--i:0">
+              <span class="flow__icon">✉</span>
+              <div><b>New email</b><small>sarah@acme.co</small></div>
+              <em class="flow__ok">✓</em>
+            </div>
+            <div class="flow__node" style="--i:1">
+              <span class="flow__icon">✦</span>
+              <div><b>AI classifies</b><small>hot lead · 94%</small></div>
+              <em class="flow__ok">✓</em>
+            </div>
+            <div class="flow__node" style="--i:2">
+              <span class="flow__icon">▦</span>
+              <div><b>CRM updated</b><small>deal created</small></div>
+              <em class="flow__ok">✓</em>
+            </div>
+            <div class="flow__node" style="--i:3">
+              <span class="flow__icon">#</span>
+              <div><b>Slack alert</b><small>#sales notified</small></div>
+              <em class="flow__ok">✓</em>
+            </div>
+          </div>
+          <ul class="service__tags"><li>LLMs</li><li>Agents</li><li>n8n</li><li>RAG</li></ul>
+        </article>
+
+        <!-- 03 Custom software: stacked layers -->
+        <article class="bcard bcard--soft" data-reveal>
+          <span class="bcard__num">03 / Software</span>
+          <h3 class="bcard__title">Custom Software</h3>
+          <p>Internal tools, business systems and integrations built around how your team actually works.</p>
+          <div class="layers" aria-hidden="true">
+            <span class="layer layer--db">DB</span>
+            <span class="layer layer--api">API</span>
+            <span class="layer layer--ui">UI</span>
+          </div>
+        </article>
+
+        <!-- 04 CTA -->
+        <a href="#contact" class="bcard bcard--cta" data-reveal data-cursor="Let's go">
+          <span class="bcard__num">04 / Your project</span>
+          <h3>Got an idea?<br />Let's build it.</h3>
+          <span class="cta-arrow">→</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= AUTOMATION DEMO ================= -->
+    <section class="section automate">
+      <div class="automate__copy">
+        <p class="eyebrow" data-reveal>(03) Automation</p>
+        <h2 class="section__title section__title--left" data-split>Workflows that run while you sleep<span class="zzz nosplit" aria-hidden="true"><i>z</i><i>z</i><i>z</i></span></h2>
+        <p class="automate__text" data-reveal>
+          I connect your tools (email, CRM, sheets, Slack, WhatsApp) with AI that reads,
+          decides and acts. Less copy-paste, fewer mistakes, more time for real work.
+        </p>
+        <a href="#contact" class="button button--dark" data-magnetic data-reveal>
+          Automate my business <span class="button__arrow">→</span>
+        </a>
+      </div>
+
+      <!-- 3D scene: grid floor, terminal, floating app icons, result card -->
+      <div class="auto-stage">
+        <div class="auto-floor" aria-hidden="true"></div>
+        <div class="auto-scene">
+          <div class="auto-tilt">
+            <div class="terminal">
+              <div class="terminal__bar">
+                <span></span><span></span><span></span>
+                <p>lead-flow.automation</p>
+              </div>
+              <pre class="terminal__body"><code id="terminal"></code><span class="terminal__caret"></span></pre>
+            </div>
+
+            <div class="app app--mail" data-app="mail" style="--z:90px"><span class="app__icon">✉</span>Gmail</div>
+            <div class="app app--sheets" data-app="sheets" style="--z:60px"><span class="app__icon">▤</span>Sheets</div>
+            <div class="app app--crm" data-app="crm" style="--z:120px"><span class="app__icon">▦</span>CRM</div>
+            <div class="app app--slack" data-app="slack" style="--z:70px"><span class="app__icon">#</span>Slack</div>
+            <div class="app app--wa" data-app="wa" style="--z:100px"><span class="app__icon">✆</span>WhatsApp</div>
+
+            <div class="result" aria-hidden="true">
+              <div class="result__head"><span class="result__bolt">⚡</span><b>Workflow complete</b></div>
+              <div class="result__bar"><span></span></div>
+              <div class="result__meta"><span>8 steps · 3.2s</span><strong>~40 hrs/month saved</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= WORK ================= -->
+    <section id="work" class="section">
+      <p class="eyebrow" data-reveal>(04) Work</p>
+      <h2 class="section__title" data-split>Selected projects</h2>
+
+      <!-- Cards stick and stack on scroll. Edit text, links and --c1/--c2 colours per card. -->
+      <div class="stack">
+        <article class="pcard" style="--n:0;--c1:#0f0f0f;--c2:#2a2a2a" data-cursor="View">
+          <div class="pcard__inner">
+            <div class="pcard__info">
+              <span class="pcard__index">01</span>
+              <div>
+                <p class="pcard__type">AI Automation · 2025</p>
+                <h3 class="pcard__title">AI Customer Support Agent</h3>
+                <p class="pcard__desc">Answers 80% of support tickets automatically using company docs, and hands the rest to a human with a summary.</p>
+                <ul class="project__tags"><li>Python</li><li>OpenAI</li><li>n8n</li><li>RAG</li></ul>
+                <a href="#" class="pcard__link" data-magnetic>View project <span>↗</span></a>
+              </div>
+            </div>
+            <div class="pcard__stage">
+              <div class="stage3d">
+                <div class="stage3d__tilt">
+                  <div class="mock mock--chat">
+                    <div class="mock__bar"><i></i><i></i><i></i></div>
+                    <div class="bubble bubble--in"></div>
+                    <div class="bubble bubble--out"></div>
+                    <div class="bubble bubble--in bubble--short"></div>
+                    <div class="bubble bubble--out bubble--long"></div>
+                  </div>
+                  <div class="float float--a">⚡ 80% auto-resolved</div>
+                  <div class="float float--b">✦ GPT + RAG</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="pcard pcard--light" style="--n:1;--c1:#d4ff3a;--c2:#b8f000" data-cursor="View">
+          <div class="pcard__inner">
+            <div class="pcard__info">
+              <span class="pcard__index">02</span>
+              <div>
+                <p class="pcard__type">Full-Stack · 2025</p>
+                <h3 class="pcard__title">SaaS Analytics Dashboard</h3>
+                <p class="pcard__desc">Real-time metrics, billing and team management for a growing SaaS product.</p>
+                <ul class="project__tags"><li>Next.js</li><li>Node.js</li><li>PostgreSQL</li></ul>
+                <a href="#" class="pcard__link" data-magnetic>View project <span>↗</span></a>
+              </div>
+            </div>
+            <div class="pcard__stage">
+              <div class="stage3d">
+                <div class="stage3d__tilt">
+                  <div class="mock mock--dash">
+                    <div class="mock__bar"><i></i><i></i><i></i></div>
+                    <div class="kpis"><b></b><b></b><b></b></div>
+                    <div class="bars"><s style="--h:40%"></s><s style="--h:65%"></s><s style="--h:50%"></s><s style="--h:85%"></s><s style="--h:60%"></s><s style="--h:95%"></s><s style="--h:75%"></s></div>
+                  </div>
+                  <div class="float float--a">📈 +42% revenue</div>
+                  <div class="float float--b">⏱ Real-time</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="pcard pcard--light" style="--n:2;--c1:#f1f1ef;--c2:#dcdcd8" data-cursor="View">
+          <div class="pcard__inner">
+            <div class="pcard__info">
+              <span class="pcard__index">03</span>
+              <div>
+                <p class="pcard__type">Custom Software · 2024</p>
+                <h3 class="pcard__title">Business Management System</h3>
+                <p class="pcard__desc">Inventory, invoices and accounts in one place, replacing a pile of spreadsheets.</p>
+                <ul class="project__tags"><li>React</li><li>Express</li><li>MongoDB</li></ul>
+                <a href="#" class="pcard__link" data-magnetic>View project <span>↗</span></a>
+              </div>
+            </div>
+            <div class="pcard__stage">
+              <div class="stage3d">
+                <div class="stage3d__tilt">
+                  <div class="mock mock--table">
+                    <div class="mock__bar"><i></i><i></i><i></i></div>
+                    <div class="rows"><b></b><b></b><b></b><b></b><b></b></div>
+                  </div>
+                  <div class="float float--a">🧾 1,200+ invoices</div>
+                  <div class="float float--b">✓ Zero spreadsheets</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="pcard" style="--n:3;--c1:#1a1a1a;--c2:#333" data-cursor="View">
+          <div class="pcard__inner">
+            <div class="pcard__info">
+              <span class="pcard__index">04</span>
+              <div>
+                <p class="pcard__type">AI Automation · 2024</p>
+                <h3 class="pcard__title">Lead Automation Pipeline</h3>
+                <p class="pcard__desc">Captures, scores and routes every lead with zero manual work, from form to CRM to Slack.</p>
+                <ul class="project__tags"><li>n8n</li><li>Webhooks</li><li>LLMs</li></ul>
+                <a href="#" class="pcard__link" data-magnetic>View project <span>↗</span></a>
+              </div>
+            </div>
+            <div class="pcard__stage">
+              <div class="stage3d">
+                <div class="stage3d__tilt">
+                  <div class="mock mock--flow">
+                    <span class="node node--a">Trigger</span>
+                    <span class="node node--b">AI</span>
+                    <span class="node node--c">CRM</span>
+                    <span class="node node--d">Slack</span>
+                    <svg class="wires" viewBox="0 0 300 200" preserveAspectRatio="none"><path d="M60 50 C120 50 110 100 150 100 M150 100 C190 100 180 50 240 50 M150 100 C190 100 180 150 240 150"/></svg>
+                  </div>
+                  <div class="float float--a">⚡ 40 hrs/month saved</div>
+                  <div class="float float--b">🔁 24/7</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================= PROCESS ================= -->
+    <!-- On desktop the steps sit on a 3D ring that rotates as you scroll (pinned). -->
+    <section id="process" class="process-sec">
+      <div class="process-pin">
+        <div class="process-head">
+          <p class="eyebrow" data-reveal>(05) Process</p>
+          <h2 class="section__title" data-split>How we'll work</h2>
+        </div>
+
+        <div class="ring-stage">
+          <div class="ring-tilt">
+            <div class="ring">
+              <article class="pstep" style="--i:0">
+                <div class="pstep__top"><span class="pstep__num">01</span><span class="pstep__tag">Kick-off</span></div>
+                <div class="pstep__art" aria-hidden="true">
+                  <span class="radar"><i class="radar__sweep"></i><b style="--x:30%;--y:35%"></b><b style="--x:68%;--y:60%"></b><b style="--x:45%;--y:75%"></b></span>
+                </div>
+                <h3>Discover</h3>
+                <p>We talk about your goals, users and the problems worth solving.</p>
+                <ul class="pstep__list"><li>Goals &amp; users</li><li>Requirements</li></ul>
+              </article>
+
+              <article class="pstep" style="--i:1">
+                <div class="pstep__top"><span class="pstep__num">02</span><span class="pstep__tag">Blueprint</span></div>
+                <div class="pstep__art" aria-hidden="true">
+                  <span class="checklist"><i style="--d:0s"></i><i style="--d:0.6s"></i><i style="--d:1.2s"></i></span>
+                </div>
+                <h3>Plan</h3>
+                <p>A clear scope, tech stack and timeline, with no surprises.</p>
+                <ul class="pstep__list"><li>Scope</li><li>Tech stack</li><li>Timeline</li></ul>
+              </article>
+
+              <article class="pstep" style="--i:2">
+                <div class="pstep__top"><span class="pstep__num">03</span><span class="pstep__tag">Sprints</span></div>
+                <div class="pstep__art" aria-hidden="true">
+                  <span class="codebars"><i style="--w:70%;--d:0s"></i><i style="--w:45%;--d:0.3s;--x:14%"></i><i style="--w:60%;--d:0.6s;--x:14%"></i><i style="--w:35%;--d:0.9s;--x:28%"></i><i style="--w:50%;--d:1.2s"></i></span>
+                </div>
+                <h3>Build</h3>
+                <p>Fast iterations with regular demos so you see progress every week.</p>
+                <ul class="pstep__list"><li>Weekly demos</li><li>Clean code</li></ul>
+              </article>
+
+              <article class="pstep" style="--i:3">
+                <div class="pstep__top"><span class="pstep__num">04</span><span class="pstep__tag">Go-live</span></div>
+                <div class="pstep__art" aria-hidden="true">
+                  <span class="rocket"><i></i><i></i><i></i>
+                    <svg class="rocket__svg" viewBox="0 0 64 64">
+                      <path class="rk-flame" d="M26.5 44 Q32 60 37.5 44 Z" />
+                      <path class="rk-flame rk-flame--core" d="M29 44 Q32 53 35 44 Z" />
+                      <path class="rk-fin" d="M23 30 L14 44 L23.5 42 Z" />
+                      <path class="rk-fin" d="M41 30 L50 44 L40.5 42 Z" />
+                      <path class="rk-body" d="M32 4 C43 13 45 28 41 44 L23 44 C19 28 21 13 32 4 Z" />
+                      <circle class="rk-window" cx="32" cy="22" r="5" />
+                      <path class="rk-fin" d="M30 44 L34 44 L34 49 L30 49 Z" />
+                    </svg>
+                  </span>
+                </div>
+                <h3>Launch &amp; support</h3>
+                <p>Deploy, monitor and keep improving after go-live.</p>
+                <ul class="pstep__list"><li>Deploy</li><li>Monitor</li><li>Improve</li></ul>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <div class="prail">
+          <div class="prail__track"><span class="prail__fill"></span></div>
+          <div class="prail__steps">
+            <button type="button" class="prail__btn"><span></span>Discover</button>
+            <button type="button" class="prail__btn"><span></span>Plan</button>
+            <button type="button" class="prail__btn"><span></span>Build</button>
+            <button type="button" class="prail__btn"><span></span>Launch</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CONTACT ================= -->
+    <section id="contact" class="contact">
+      <canvas class="contact__globe" aria-hidden="true"></canvas>
+      <div class="contact__inner">
+        <p class="eyebrow eyebrow--light" data-reveal>(06) Contact</p>
+        <h2 class="contact__title" data-split-3d>Let's build something <em class="hl hl--dark">great</em> together.</h2>
+
+        <div class="contact__actions">
+          <a href="mailto:anil.codematrix@gmail.com" class="orb" data-magnetic data-cursor="Say hi">
+            <span class="orb__wave" aria-hidden="true"></span>
+            <span class="orb__wave" aria-hidden="true"></span>
+            <span class="orb__ring" aria-hidden="true"></span>
+            <span class="orb__label">Get in<br />touch</span>
+          </a>
+          <div class="contact__links">
+            <button class="copy" type="button" data-email="anil.codematrix@gmail.com" data-reveal>
+              <span class="copy__text">anil.codematrix@gmail.com</span>
+              <span class="copy__hint">Click to copy</span>
+            </button>
+            <div class="socials" data-reveal>
+              <a href="https://github.com/anilcodematrix" target="_blank" rel="noopener"><span class="roll"><span>GitHub ↗</span><span>GitHub ↗</span></span></a>
+              <a href="https://www.linkedin.com/in/anil-sharma-275122316/" target="_blank" rel="noopener"><span class="roll"><span>LinkedIn ↗</span><span>LinkedIn ↗</span></span></a>
+              <a href="https://x.com/" target="_blank" rel="noopener"><span class="roll"><span>X / Twitter ↗</span><span>X / Twitter ↗</span></span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Giant scrolling name -->
+      <div class="bigname" aria-hidden="true">
+        <div class="bigname__track"><span>Anil Sharma</span><i>✦</i><span>Full-Stack &amp; AI</span><i>✦</i></div>
+      </div>
+
+      <footer class="footer">
+        <p>© <span id="year"></span> Anil Sharma. Built with code &amp; coffee.</p>
+        <a href="#top" class="footer__top">Back to top ↑</a>
+      </footer>
+    </section>
+  </main>
+
+  <div class="toast" role="status" aria-live="polite">Email copied to clipboard ✓</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script src="script.js?v=29"></script>
+</body>
+</html>
