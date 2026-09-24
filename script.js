@@ -22,6 +22,9 @@ const TERMINAL_LINES = [
 const $ = (s, ctx = document) => ctx.querySelector(s);
 const $$ = (s, ctx = document) => [...ctx.querySelectorAll(s)];
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Phones / touch devices get a lighter version of the heavy effects
+const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+const lite = isTouch || window.matchMedia("(max-width: 760px)").matches;
 const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 const hasGsap = typeof window.gsap !== "undefined" && typeof window.ScrollTrigger !== "undefined";
 
@@ -281,13 +284,33 @@ if (finePointer && !reduceMotion) {
   });
 })();
 
+/* ---------- Mobile menu ---------- */
+(function mobileMenu() {
+  const toggle = $(".nav__toggle");
+  const menu = $(".mnav");
+  if (!toggle || !menu) return;
+  const root = document.documentElement;
+
+  const setOpen = (open) => {
+    root.classList.toggle("menu-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    menu.setAttribute("aria-hidden", String(!open));
+  };
+
+  toggle.addEventListener("click", () => setOpen(!root.classList.contains("menu-open")));
+  $$("a", menu).forEach((a) => a.addEventListener("click", () => setOpen(false)));
+  document.addEventListener("keydown", (e) => e.key === "Escape" && setOpen(false));
+  window.addEventListener("resize", () => window.innerWidth > 640 && setOpen(false));
+})();
+
 /* ---------- Nav: hide on scroll down, show on scroll up ---------- */
 (function navBehaviour() {
   const nav = $(".nav");
   let last = 0;
   window.addEventListener("scroll", () => {
     const y = window.scrollY;
-    nav.classList.toggle("is-hidden", y > last && y > 300);
+    nav.classList.toggle("is-hidden", y > last && y > 300 && !document.documentElement.classList.contains("menu-open"));
     last = y;
   }, { passive: true });
 
@@ -317,7 +340,7 @@ $$(".marquee, .bigname").forEach((m) => {
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
   const section = $(".contact");
-  const COUNT = 1100;
+  const COUNT = lite ? 420 : 1100;
   const points = [];
   // Evenly spread points on a sphere (Fibonacci lattice)
   for (let i = 0; i < COUNT; i++) {
@@ -336,7 +359,7 @@ $$(".marquee, .bigname").forEach((m) => {
   let running = false;
 
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, lite ? 1.25 : 2);
     size = canvas.offsetWidth;
     canvas.width = size * dpr;
     canvas.height = size * dpr;
@@ -506,10 +529,12 @@ if (!hasGsap || reduceMotion) {
   if (pre) pre.remove();
 } else {
   gsap.registerPlugin(ScrollTrigger);
+  // Don't recalculate everything when the phone's address bar shows/hides
+  ScrollTrigger.config({ ignoreMobileResize: true });
 
   /* ---------- Smooth scroll ---------- */
   let lenis = null;
-  if (window.Lenis) {
+  if (window.Lenis && !isTouch) {
     lenis = new Lenis({ duration: 1.15, smoothWheel: true });
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((time) => lenis.raf(time * 1000));
@@ -613,14 +638,14 @@ if (!hasGsap || reduceMotion) {
   if (starCanvas) {
     const sctx = starCanvas.getContext("2d");
     let sw, sh;
-    const stars = Array.from({ length: 420 }, () => ({
+    const stars = Array.from({ length: lite ? 160 : 420 }, () => ({
       x: (Math.random() - 0.5) * 2,
       y: (Math.random() - 0.5) * 2,
       z: Math.random(),
       lime: Math.random() < 0.25,
     }));
     const sizeStars = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = lite ? 1 : Math.min(window.devicePixelRatio || 1, 2);
       sw = window.innerWidth;
       sh = window.innerHeight;
       starCanvas.width = sw * dpr;
@@ -819,8 +844,8 @@ if (!hasGsap || reduceMotion) {
       }, "-=1.1")
       .from(".stat__label", { y: 16, opacity: 0, duration: 0.7, ease: "power3.out", stagger: 0.12 }, "-=0.9");
 
-    // Parallax: neighbouring numbers drift at different speeds
-    $$(".stat").forEach((stat, i) => {
+    // Parallax: neighbouring numbers drift at different speeds (desktop only)
+    if (!lite) $$(".stat").forEach((stat, i) => {
       gsap.fromTo(stat, { y: i % 2 ? 30 : -10 }, {
         y: i % 2 ? -20 : 15,
         ease: "none",
@@ -890,8 +915,8 @@ if (!hasGsap || reduceMotion) {
     if (next) {
       gsap.to(card, {
         scale: 0.9,
-        rotateX: -8,
-        filter: "brightness(0.6)",
+        rotateX: lite ? 0 : -8,
+        ...(lite ? { opacity: 0.55 } : { filter: "brightness(0.6)" }),
         transformPerspective: 1400,
         ease: "none",
         scrollTrigger: { trigger: next, start: "top bottom", end: "top 20%", scrub: true },
@@ -1038,7 +1063,7 @@ if (!hasGsap || reduceMotion) {
   /* ---------- Big name leans with scroll speed ---------- */
   // (skew the container: the tracks already use transform for the CSS marquee)
   const bigName = $(".bigname");
-  if (bigName) {
+  if (bigName && !lite) {
     const skewTo = gsap.quickTo(bigName, "skewX", { duration: 0.5, ease: "power3.out" });
     ScrollTrigger.create({
       trigger: ".bigname",

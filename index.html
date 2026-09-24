@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="no-js">
 <head>
   <meta charset="UTF-8" />
@@ -13,7 +13,7 @@
     href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="styles.css?v=29" />
+  <link rel="stylesheet" href="styles.css?v=33" />
 </head>
 <body>
   <!-- Preloader -->
@@ -81,7 +81,27 @@
     <a href="#work" class="nav__link">Work</a>
     <a href="#process" class="nav__link">Process</a>
     <a href="#contact" class="nav__link nav__cta">Get in touch</a>
+    <button class="nav__toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mnav">
+      <span></span><span></span>
+    </button>
   </nav>
+
+  <!-- Full-screen menu for phones -->
+  <div class="mnav" id="mnav" aria-hidden="true">
+    <nav class="mnav__links" aria-label="Mobile">
+      <a href="#services"><small>01</small>Services</a>
+      <a href="#work"><small>02</small>Work</a>
+      <a href="#process"><small>03</small>Process</a>
+      <a href="#contact"><small>04</small>Contact</a>
+    </nav>
+    <div class="mnav__foot">
+      <a href="mailto:anil.codematrix@gmail.com">anil.codematrix@gmail.com</a>
+      <div>
+        <a href="https://github.com/anilcodematrix" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/anil-sharma-275122316/" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </div>
+  </div>
 
   <main id="top">
     <!-- ================= HERO ================= -->
@@ -584,6 +604,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
-  <script src="script.js?v=29"></script>
+  <script src="script.js?v=33"></script>
 </body>
 </html>
