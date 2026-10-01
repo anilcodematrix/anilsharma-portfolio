@@ -1010,16 +1010,26 @@ body.has-cursor .cursor-ring {
   font-size: clamp(38px, 6.4vw, 84px);
   line-height: 1.02;
   letter-spacing: -0.015em;
+  perspective: 1100px;
+  perspective-origin: 50% 40%;
+}
+
+/* Everything from here down shares one 3D space (no overflow:hidden, it would flatten it) */
+.title-3d {
+  display: block;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .line {
   display: block;
-  overflow: hidden;
   padding-bottom: 0.06em;
+  transform-style: preserve-3d;
 }
 
 .line__inner {
   display: inline-block;
+  transform-style: preserve-3d;
 }
 
 .hero__subtitle {
@@ -1074,11 +1084,27 @@ body.has-cursor .cursor-ring {
 .word {
   display: inline-block;
   white-space: nowrap;
+  transform-style: preserve-3d;
 }
 
+/* --t (0 → 1) is set by JS from cursor distance: the letter rises, tips back
+   and grows a lime extruded edge */
 .ch {
+  --t: 0;
   display: inline-block;
-  transition: font-variation-settings 0.35s ease, color 0.35s ease;
+  transform: translate3d(0, calc(var(--t) * -0.16em), calc(var(--t) * 110px)) rotateX(calc(var(--t) * 18deg));
+  text-shadow:
+    calc(var(--t) * 1px) calc(var(--t) * 1px) 0 #c2f02c,
+    calc(var(--t) * 2px) calc(var(--t) * 2px) 0 #b5e320,
+    calc(var(--t) * 3px) calc(var(--t) * 3px) 0 #a8d618,
+    calc(var(--t) * 4px) calc(var(--t) * 4px) 0 #9ccf00,
+    calc(var(--t) * 5px) calc(var(--t) * 6px) 0 #8fbf00,
+    calc(var(--t) * 12px) calc(var(--t) * 26px) calc(var(--t) * 22px) rgba(0, 0, 0, 0.22);
+}
+
+/* The rotating word tumbles in 3D on each change */
+.hero__title .flip {
+  backface-visibility: hidden;
 }
 
 /* Glow + orbit rings behind the portrait */

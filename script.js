@@ -89,6 +89,15 @@ function splitWords(el) {
     });
     line.replaceChildren(...parts);
   });
+
+  // 3D stage: the whole title tilts as one, each line sits at its own depth
+  const title = $(".hero__title");
+  if (title) {
+    const stage = document.createElement("span");
+    stage.className = "title-3d";
+    stage.append(...title.childNodes);
+    title.append(stage);
+  }
 })();
 
 /* ---------- Rotating headline word with code-style scramble ---------- */
@@ -121,6 +130,11 @@ function splitWords(el) {
     }));
     let frame = 0;
 
+    // The highlighted word tumbles over in 3D while it scrambles
+    if (hasGsap) {
+      gsap.fromTo(flip, { rotateX: -100, transformOrigin: "50% 100%" }, { rotateX: 0, duration: 0.9, ease: "back.out(1.8)" });
+    }
+
     (function update() {
       let html = "";
       let done = 0;
@@ -146,11 +160,18 @@ function splitWords(el) {
   }, FLIP_INTERVAL);
 })();
 
-/* ---------- Headline letters react to the cursor ---------- */
+/* ---------- Headline: 3D tilt toward the cursor, letters lift off the page ---------- */
 if (finePointer && !reduceMotion) {
+  const hero = $(".hero");
   const title = $(".hero__title");
+  const stage = $(".title-3d", title);
   const chars = $$(".ch", title);
-  let centers = [];
+  const heat = new Float32Array(chars.length);
+  const RADIUS = 190;
+  // Starts tipped back so the title swings upright as the page loads
+  const tilt = { x: -14, y: 22, tx: 0, ty: 0 };
+  let centers = null;
+  let mx = -1e4, my = -1e4, lastMove = 0, raf = 0;
 
   const measure = () => {
     centers = chars.map((c) => {
@@ -159,15 +180,61 @@ if (finePointer && !reduceMotion) {
     });
   };
 
-  title.addEventListener("mouseenter", measure);
-  title.addEventListener("mousemove", (e) => {
-    chars.forEach((c, i) => {
-      const d = Math.hypot(e.clientX - centers[i].x, e.clientY - centers[i].y);
-      const t = Math.max(0, 1 - d / 220);
-      c.style.fontVariationSettings = `"wdth" ${125 - t * 25}, "wght" ${800 + t * 100}`;
-    });
+  function frame(now) {
+    raf = requestAnimationFrame(frame);
+    // Read positions before any writes this frame (avoids forced layout)
+    if (!centers && mx > -1e3) measure();
+
+    // Idle: the title drifts in a slow figure-eight until the mouse moves again
+    if (now - lastMove > 2500) {
+      tilt.tx = Math.sin(now / 2400) * 7;
+      tilt.ty = Math.sin(now / 1700) * 3.5;
+    }
+    tilt.x += (tilt.tx - tilt.x) * 0.07;
+    tilt.y += (tilt.ty - tilt.y) * 0.07;
+    stage.style.transform = `rotateY(${tilt.x.toFixed(2)}deg) rotateX(${tilt.y.toFixed(2)}deg)`;
+
+    // Letters near the cursor rise toward the viewer; only touch the ones that change
+    if (!centers) {
+      // Cursor gone and positions stale: just let any raised letters settle
+      for (let i = 0; i < chars.length; i++) if (heat[i]) chars[i].style.setProperty("--t", (heat[i] = 0));
+      return;
+    }
+    for (let i = 0; i < chars.length; i++) {
+      const d = Math.hypot(mx - centers[i].x, my - centers[i].y);
+      const target = d < RADIUS ? (1 - d / RADIUS) ** 2 : 0;
+      const next = heat[i] + (target - heat[i]) * 0.16;
+      if (Math.abs(next - heat[i]) < 0.002 && target === 0) {
+        if (heat[i] !== 0) chars[i].style.setProperty("--t", (heat[i] = 0));
+        continue;
+      }
+      heat[i] = next;
+      chars[i].style.setProperty("--t", next.toFixed(3));
+    }
+  }
+
+  hero.addEventListener("mousemove", (e) => {
+    mx = e.clientX;
+    my = e.clientY;
+    lastMove = performance.now();
+    tilt.tx = (mx / window.innerWidth - 0.5) * 22;
+    tilt.ty = -(my / window.innerHeight - 0.5) * 14;
   });
-  title.addEventListener("mouseleave", () => chars.forEach((c) => (c.style.fontVariationSettings = "")));
+  hero.addEventListener("mouseleave", () => {
+    mx = my = -1e4;
+    lastMove = 0;
+  });
+  window.addEventListener("scroll", () => (centers = null), { passive: true });
+  window.addEventListener("resize", () => (centers = null));
+
+  // Only animate while the hero is on screen
+  new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting && !raf) raf = requestAnimationFrame(frame);
+    else if (!entry.isIntersecting && raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+  }).observe(hero);
 }
 
 /* ---------- Services: code types itself, app preview builds ---------- */
@@ -580,7 +647,15 @@ if (!hasGsap || reduceMotion) {
   });
 
   /* ---------- Initial hidden states ---------- */
-  gsap.set([".hero__title .ch", ".flip"], { yPercent: 120, rotate: 6 });
+  // Letters start deep behind the screen, tipped over, at random angles
+  gsap.set([".hero__title .ch", ".flip"], {
+    opacity: 0,
+    yPercent: 70,
+    z: -700,
+    rotateX: -110,
+    rotateY: () => gsap.utils.random(-50, 50),
+    transformOrigin: "50% 100%",
+  });
   gsap.set([".hero__halo", ".spin-badge"], { scale: 0.6, opacity: 0 });
   gsap.set(".hero__title .hl", { "--hl": 0 });
   gsap.set([".hero__status", ".hero__subtitle"], { y: 20, opacity: 0 });
@@ -594,7 +669,18 @@ if (!hasGsap || reduceMotion) {
 
   const intro = gsap.timeline({ paused: true, onComplete: () => lenis && lenis.start() });
   intro
-    .to([".hero__title .ch", ".flip"], { yPercent: 0, rotate: 0, duration: 1, ease: "power4.out", stagger: 0.022 })
+    .to([".hero__title .ch", ".flip"], {
+      opacity: 1,
+      yPercent: 0,
+      z: 0,
+      rotateX: 0,
+      rotateY: 0,
+      duration: 1.4,
+      ease: "expo.out",
+      stagger: 0.024,
+      // Hand transform back to CSS so the cursor lift (--t) takes over
+      clearProps: "transform,opacity",
+    })
     .to(".hero__title .hl", { "--hl": 1, duration: 0.8, ease: "power3.inOut" }, "-=0.4")
     .to(".nav", { y: 0, opacity: 1, duration: 0.9, ease: "power3.out", clearProps: "transform" }, "-=1.1")
     .to([".hero__status", ".hero__subtitle"], { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", stagger: 0.1 }, "-=0.9")
@@ -774,11 +860,17 @@ if (!hasGsap || reduceMotion) {
   });
 
   /* ---------- Hero parallax on scroll ---------- */
-  gsap.to(".hero__title", {
-    yPercent: -30,
-    opacity: 0.2,
-    ease: "none",
-    scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true },
+  // Each line sits at its own depth, then peels back into the screen as you scroll
+  $$(".hero__title .line").forEach((line, i) => {
+    gsap.set(line, { z: [0, 35, 80][i] || 0, transformOrigin: "50% 0%" });
+    gsap.to(line, {
+      yPercent: -60 - i * 30,
+      rotateX: 45 + i * 12,
+      z: -220 - i * 90,
+      opacity: 0,
+      ease: "none",
+      scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 0.6 },
+    });
   });
 
   gsap.to(".hero__visual", {
