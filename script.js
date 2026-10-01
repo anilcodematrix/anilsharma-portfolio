@@ -476,21 +476,44 @@ if (finePointer && !reduceMotion) {
   const statsRow = $(".stats");
   if (statsRow) {
     const nums = $$(".stat__num", statsRow);
-    statsRow.addEventListener("mousemove", (e) => {
-      nums.forEach((num) => {
+    // Measure once per hover (not per mousemove) and batch writes into one frame
+    let centers = [];
+    let mx = 0, my = 0, raf = 0;
+    const measure = () => {
+      centers = nums.map((num) => {
         const r = num.getBoundingClientRect();
-        const dx = (e.clientX - (r.left + r.width / 2)) / window.innerWidth;
-        const dy = (e.clientY - (r.top + r.height / 2)) / window.innerHeight;
-        num.style.setProperty("--ry", `${Math.max(-35, Math.min(35, dx * 90))}deg`);
-        num.style.setProperty("--rx", `${Math.max(-25, Math.min(25, -dy * 90))}deg`);
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
       });
+    };
+    const apply = () => {
+      raf = 0;
+      const w = window.innerWidth, h = window.innerHeight;
+      nums.forEach((num, i) => {
+        const c = centers[i];
+        if (!c) return;
+        const dx = (mx - c.x) / w;
+        const dy = (my - c.y) / h;
+        num.style.setProperty("--ry", `${Math.max(-35, Math.min(35, dx * 90)).toFixed(2)}deg`);
+        num.style.setProperty("--rx", `${Math.max(-25, Math.min(25, -dy * 90)).toFixed(2)}deg`);
+      });
+    };
+    statsRow.addEventListener("mouseenter", measure);
+    window.addEventListener("scroll", () => (centers.length ? measure() : 0), { passive: true });
+    statsRow.addEventListener("mousemove", (e) => {
+      mx = e.clientX;
+      my = e.clientY;
+      if (!centers.length) measure();
+      if (!raf) raf = requestAnimationFrame(apply);
     });
-    statsRow.addEventListener("mouseleave", () =>
+    statsRow.addEventListener("mouseleave", () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      centers = [];
       nums.forEach((num) => {
         num.style.setProperty("--ry", "0deg");
         num.style.setProperty("--rx", "0deg");
-      })
-    );
+      });
+    });
   }
 
   // Project cards: 3D tilt + sheen follow the mouse
@@ -527,6 +550,7 @@ if (!hasGsap || reduceMotion) {
   // No animation library (offline) or user prefers less motion: just show everything
   const pre = $(".preloader");
   if (pre) pre.remove();
+  $(".stats")?.classList.add("is-live");
 } else {
   gsap.registerPlugin(ScrollTrigger);
   // Don't recalculate everything when the phone's address bar shows/hides
@@ -834,24 +858,17 @@ if (!hasGsap || reduceMotion) {
         rotateX: -95,
         yPercent: 40,
         opacity: 0,
-        filter: "blur(8px)",
         transformPerspective: 600,
         transformOrigin: "50% 100%",
         duration: 1.1,
         ease: "back.out(1.4)",
         stagger: 0.12,
-        clearProps: "transform,filter",
+        force3D: true,
+        clearProps: "transform",
       }, "-=1.1")
-      .from(".stat__label", { y: 16, opacity: 0, duration: 0.7, ease: "power3.out", stagger: 0.12 }, "-=0.9");
-
-    // Parallax: neighbouring numbers drift at different speeds (desktop only)
-    if (!lite) $$(".stat").forEach((stat, i) => {
-      gsap.fromTo(stat, { y: i % 2 ? 30 : -10 }, {
-        y: i % 2 ? -20 : 15,
-        ease: "none",
-        scrollTrigger: { trigger: statsEl, start: "top bottom", end: "bottom top", scrub: true },
-      });
-    });
+      .from(".stat__label", { y: 16, opacity: 0, duration: 0.7, ease: "power3.out", stagger: 0.12 }, "-=0.9")
+      // Hover transitions only switch on once GSAP is done, so they never fight the intro
+      .add(() => statsEl.classList.add("is-live"));
   }
 
   /* ---------- Counters ---------- */

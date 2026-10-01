@@ -1569,8 +1569,14 @@ body.has-cursor .cursor-ring {
   line-height: 1;
   font-variant-numeric: tabular-nums;
   transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(var(--z, 0px));
-  transition: transform 0.5s var(--ease), text-shadow 0.4s ease;
+  transition: text-shadow 0.4s ease;
   will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Enabled after the intro so the CSS transition doesn't fight GSAP */
+.stats.is-live .stat__num {
+  transition: transform 0.5s var(--ease), text-shadow 0.4s ease;
 }
 
 .stat:hover .stat__num {
