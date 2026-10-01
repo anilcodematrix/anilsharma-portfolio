@@ -1388,20 +1388,23 @@ body.has-cursor .cursor-ring {
   overflow: visible;
 }
 
-/* Red + webs multiply onto the photo so the real face shading shows through */
-.spidey--ink {
-  mix-blend-mode: multiply;
-}
-
+/* Raised web strands: dark ridge + thin highlight just above it */
 .spidey__web {
   fill: none;
-  stroke: #2b0308;
-  stroke-width: 1.1;
+  stroke: #17020a;
+  stroke-width: 1.7;
   stroke-linecap: round;
+  stroke-linejoin: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   transition: stroke-dashoffset 0.7s cubic-bezier(0.65, 0, 0.35, 1);
   transition-delay: calc(var(--i, 0) * 45ms);
+}
+
+.spidey__web--hi {
+  stroke: rgba(255, 190, 200, 0.42);
+  stroke-width: 0.55;
+  transform: translate(-0.5px, -0.7px);
 }
 
 .face3d.is-spidey .spidey__web {

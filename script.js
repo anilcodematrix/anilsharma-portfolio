@@ -244,43 +244,60 @@ if (finePointer && !reduceMotion) {
   if (!face3d) return;
 
   // Everything below is in a 300×400 grid = the 3:4 photo crop.
-  // If you swap the photo, re-aim these at the new face.
-  const FACE = "M160 96 C204 96 230 124 230 162 C230 208 204 246 160 258 C116 246 89 208 89 162 C89 124 116 96 160 96 Z";
-  const HIT = { x: 160, y: 176, rx: 72, ry: 84 }; // area that triggers the mask
-  const C = { x: 161, y: 166 }; // web centre, between the eyes and the nose
+  // If you swap the photo, re-aim these at the new head.
+  // Full hood: covers the hair, ears and neck down to the collar
+  const HEAD = "M159 12 C215 12 266 42 261 95 C260 135 247 168 232 192 C214 224 192 252 159 258 C126 252 104 224 86 192 C71 168 58 135 57 95 C56 45 103 12 159 12 Z";
+  const NECK = "M122 222 L196 222 C197 244 199 262 203 281 Q163 290 121 281 C125 262 125 244 122 222 Z";
+  // Where the real face shading shows through the fabric (nose, cheeks, brow)
+  const FACE = "M160 104 C202 104 226 128 226 164 C226 206 202 240 162 248 C120 240 94 206 94 164 C94 128 118 104 160 104 Z";
+  const HIT = { x: 160, y: 176, rx: 72, ry: 84 }; // moving onto the face puts the mask on
+  const HOOD = { x: 160, y: 140, rx: 108, ry: 140 }; // leaving the whole head takes it off
+  const C = { x: 161, y: 150 }; // web centre, at the bridge of the nose
   const EYES = [{ x: 127, y: 136, flip: 1 }, { x: 195, y: 133, flip: -1 }];
-  const LENS = "M16 12 C-6 14 -22 4 -26 -14 C-10 -14 8 -8 20 2 C24 6 22 12 16 12 Z";
+  // Big angular lens: pointed toward the nose, sweeping up to the temple
+  const LENS = "M21 17 C9 0 -10 -18 -31 -22 C-37 -6 -35 13 -19 22 C-6 29 10 26 21 17 Z";
+  const GLOSS = "M-25 -16 C-12 -13 2 -5 15 6 C2 -1 -12 -8 -25 -11 Z";
 
-  // Web: spokes from the centre + sagging rings between them
+  // Web is laid out flat, then wrapped onto a dome so it bunches toward the edges like fabric on a head
+  const AX = 106, AY = 136;
+  const flat = (a, n) => {
+    const k = n ? Math.sin(Math.min(n, 1.57)) / n : 1;
+    return `${(C.x + Math.cos(a) * n * AX * k).toFixed(1)} ${(C.y + Math.sin(a) * n * AY * k).toFixed(1)}`;
+  };
   const SPOKES = 16;
-  const pt = (a, r) => `${(C.x + Math.cos(a) * r).toFixed(1)} ${(C.y + Math.sin(a) * r * 1.15).toFixed(1)}`;
-  let web = "";
-  for (let k = 0; k < SPOKES; k++) {
-    const a = (k / SPOKES) * Math.PI * 2;
-    web += `<path class="spidey__web" pathLength="1" d="M${pt(a, 4)} L${pt(a, 165)}"/>`;
-  }
-  [14, 30, 49, 71, 96, 124, 154].forEach((r, n) => {
-    let d = `M${pt(0, r)}`;
-    for (let k = 1; k <= SPOKES; k++) {
-      const a0 = ((k - 1) / SPOKES) * Math.PI * 2;
-      const a1 = (k / SPOKES) * Math.PI * 2;
-      d += ` Q${pt((a0 + a1) / 2, r * 0.84)} ${pt(a1, r)}`;
+  const STEP = (Math.PI * 2) / SPOKES;
+  const webPaths = [];
+  for (let k = 0; k < SPOKES; k++) webPaths.push([`M${flat(k * STEP, 0.03)} L${flat(k * STEP, 1.57)}`, 0]);
+  [0.08, 0.17, 0.28, 0.41, 0.56, 0.73, 0.93, 1.15, 1.4].forEach((n, i) => {
+    let d = "";
+    for (let k = 0; k < SPOKES; k++) {
+      for (let s = k ? 1 : 0; s <= 6; s++) {
+        const t = s / 6;
+        // Each strand sags toward the centre between two spokes
+        d += `${d ? " L" : "M"}${flat(k * STEP + STEP * t, n * (1 - 0.56 * t * (1 - t)))}`;
+      }
     }
-    web += `<path class="spidey__web" pathLength="1" style="--i:${n + 3}" d="${d}"/>`;
+    webPaths.push([`${d} Z`, i + 2]);
   });
-
-  const reveal = (id) =>
-    `<radialGradient id="${id}G"><stop offset="0.8" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-     <mask id="${id}" maskUnits="userSpaceOnUse" x="-200" y="-200" width="700" height="800"><circle class="spidey__reveal" r="0" fill="url(#${id}G)"/></mask>`;
-
-  const eyes = EYES.map((e) =>
-    `<g transform="translate(${e.x} ${e.y}) scale(${e.flip} 1)"><path class="spidey__lens" d="${LENS}" fill="url(#spLensFill)" stroke="#111" stroke-width="4.5" stroke-linejoin="round"/></g>`
+  // Each strand is drawn twice: a dark ridge plus a thin highlight, so it looks raised
+  const web = webPaths.map(([d, i]) =>
+    `<path class="spidey__web" pathLength="1" style="--i:${i}" d="${d}"/>` +
+    `<path class="spidey__web spidey__web--hi" pathLength="1" style="--i:${i}" d="${d}"/>`
   ).join("");
+
+  const eyes = EYES.map((e) => `
+    <g transform="translate(${e.x} ${e.y}) scale(${e.flip * 1.15} 1.15)"><g class="spidey__lens">
+      <path d="${LENS}" fill="url(#spLensFill)"/>
+      <path d="${LENS}" fill="url(#spMesh)"/>
+      <path d="${GLOSS}" fill="#fff" opacity="0.75"/>
+      <path d="${LENS}" fill="none" stroke="#0b0b0b" stroke-width="7" stroke-linejoin="round"/>
+      <path d="${LENS}" fill="none" stroke="#5a5a5a" stroke-width="0.8" stroke-linejoin="round" transform="translate(-0.7 -0.9)"/>
+    </g></g>`).join("");
 
   // Spider-sense squiggles, zig-zagging outward from both sides of the head
   const sense = [
-    [52, 112, -1, -0.6], [44, 145, -1, 0], [52, 178, -1, 0.6],
-    [262, 110, 1, -0.6], [270, 143, 1, 0], [262, 176, 1, 0.6],
+    [42, 100, -1, -0.6], [34, 135, -1, 0], [42, 170, -1, 0.6],
+    [274, 100, 1, -0.6], [282, 135, 1, 0], [274, 170, 1, 0.6],
   ].map(([x, y, ux, uy], i) => {
     const len = Math.hypot(ux, uy);
     const [dx, dy] = [ux / len, uy / len];
@@ -292,28 +309,58 @@ if (finePointer && !reduceMotion) {
     return `<path style="--i:${i % 3};--dx:${dx * 26}px;--dy:${dy * 26}px" d="${d}"/>`;
   }).join("");
 
+  const photoSrc = $("img", face3d)?.getAttribute("src") || "";
   face3d.insertAdjacentHTML("beforeend", `
-    <svg class="spidey spidey--ink" viewBox="0 0 300 400" preserveAspectRatio="none" aria-hidden="true">
+    <svg class="spidey" viewBox="0 0 300 400" preserveAspectRatio="none" aria-hidden="true">
       <defs>
-        <linearGradient id="spRed" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#ff2b3e"/><stop offset="1" stop-color="#9e0f1d"/>
-        </linearGradient>
-        <filter id="spSoft"><feGaussianBlur stdDeviation="3"/></filter>
-        <mask id="spFace"><path d="${FACE}" fill="#fff" filter="url(#spSoft)"/></mask>
-        ${reveal("spReveal")}
-      </defs>
-      <g mask="url(#spReveal)"><g mask="url(#spFace)">
-        <rect width="300" height="400" fill="url(#spRed)"/>
-        ${web}
-      </g></g>
-    </svg>
-    <svg class="spidey spidey--lens" viewBox="0 0 300 400" preserveAspectRatio="none" aria-hidden="true">
-      <defs>
+        <radialGradient id="spRed" cx="0.45" cy="0.36" r="0.72">
+          <stop offset="0" stop-color="#d4304e"/><stop offset="0.55" stop-color="#a5183a"/><stop offset="1" stop-color="#4e0614"/>
+        </radialGradient>
+        <radialGradient id="spSheen" cx="0.4" cy="0.2" r="0.38">
+          <stop offset="0" stop-color="#fff" stop-opacity="0.34"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+        </radialGradient>
         <linearGradient id="spLensFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d9e1ea"/>
+          <stop offset="0" stop-color="#f3f5f6"/><stop offset="1" stop-color="#a9b0b6"/>
         </linearGradient>
+        <!-- Lens mesh and knitted fabric texture -->
+        <pattern id="spMesh" width="2.2" height="2.2" patternUnits="userSpaceOnUse">
+          <circle cx="1.1" cy="1.1" r="0.5" fill="#4d555c" opacity="0.4"/>
+        </pattern>
+        <pattern id="spKnit" width="3" height="2.6" patternUnits="userSpaceOnUse">
+          <path d="M0 1.3 L0.75 0 L2.25 0 L3 1.3 L2.25 2.6 L0.75 2.6 Z" fill="none" stroke="#000" stroke-width="0.35" opacity="0.3"/>
+        </pattern>
+        <filter id="spBlur"><feGaussianBlur stdDeviation="4"/></filter>
+        <filter id="spShade"><feColorMatrix type="saturate" values="0"/><feGaussianBlur stdDeviation="2.4"/></filter>
+        <mask id="spFace"><path d="${FACE}" fill="#fff" filter="url(#spBlur)"/></mask>
+        <clipPath id="spHead"><path d="${HEAD}"/><path d="${NECK}"/></clipPath>
+        <linearGradient id="spNeck" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#5c0a1c"/><stop offset="1" stop-color="#2a030b"/>
+        </linearGradient>
+        <linearGradient id="spTuck" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0.55" stop-color="#1c1c1c" stop-opacity="0"/><stop offset="1" stop-color="#1c1c1c" stop-opacity="0.9"/>
+        </linearGradient>
+        <radialGradient id="spRevealG"><stop offset="0.8" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+        <mask id="spReveal" maskUnits="userSpaceOnUse" x="-200" y="-200" width="700" height="800">
+          <circle class="spidey__reveal" r="0" fill="url(#spRevealG)"/>
+        </mask>
       </defs>
-      ${eyes}
+      <g mask="url(#spReveal)">
+        <g clip-path="url(#spHead)">
+          <!-- Neck sits behind the head, in the jaw's shadow, tucking into the collar -->
+          <path d="${NECK}" fill="url(#spNeck)"/>
+          <ellipse cx="159" cy="262" rx="44" ry="9" fill="#000" opacity="0.45" filter="url(#spBlur)"/>
+          <path d="${HEAD}" fill="url(#spRed)"/>
+          <!-- Blurred copy of the real face, blended in so the fabric follows the nose, brow and cheeks -->
+          <image href="${photoSrc}" width="300" height="400" preserveAspectRatio="xMidYMax slice"
+                 filter="url(#spShade)" mask="url(#spFace)" opacity="0.65" style="mix-blend-mode:overlay"/>
+          <rect width="300" height="400" fill="url(#spKnit)"/>
+          ${web}
+          <path d="${HEAD}" fill="url(#spSheen)"/>
+          <path d="${HEAD}" fill="none" stroke="#2a020a" stroke-width="5" opacity="0.5" filter="url(#spBlur)"/>
+          <path d="${NECK}" fill="url(#spTuck)"/>
+        </g>
+        ${eyes}
+      </g>
     </svg>
     <div class="face3d__glare"></div>`);
   photo.insertAdjacentHTML("beforeend",
@@ -359,7 +406,7 @@ if (finePointer && !reduceMotion) {
   function setOn(on, x, y) {
     if (on === st.on) return;
     st.on = on;
-    st.tr = on ? 330 : 0;
+    st.tr = on ? 420 : 0;
     circles.forEach((c) => {
       c.setAttribute("cx", x.toFixed(1));
       c.setAttribute("cy", y.toFixed(1));
@@ -382,7 +429,7 @@ if (finePointer && !reduceMotion) {
     const v = (e.clientY - b.top) / b.height;
     return { u, v, x: u * 300, y: v * 400 };
   };
-  const inFace = (x, y) => ((x - HIT.x) / HIT.rx) ** 2 + ((y - HIT.y) / HIT.ry) ** 2 < 1;
+  const inOval = (o, x, y) => ((x - o.x) / o.rx) ** 2 + ((y - o.y) / o.ry) ** 2 < 1;
 
   if (finePointer) {
     photo.addEventListener("mousemove", (e) => {
@@ -393,7 +440,8 @@ if (finePointer && !reduceMotion) {
       }
       face3d.style.setProperty("--gx", `${(u * 100).toFixed(1)}%`);
       face3d.style.setProperty("--gy", `${(v * 100).toFixed(1)}%`);
-      const hit = inFace(x, y);
+      // Comes on over the face, stays on anywhere over the hooded head
+      const hit = st.on ? inOval(HOOD, x, y) : inOval(HIT, x, y);
       setOn(hit, x, y);
       // Lenses narrow when the cursor gets right up to the eyes
       if (hit) face3d.style.setProperty("--sq", EYES.some((eye) => Math.hypot(x - eye.x, y - eye.y) < 28) ? 0.5 : 1);
@@ -410,7 +458,7 @@ if (finePointer && !reduceMotion) {
     photo.addEventListener("click", (e) => {
       const { x, y } = local(e);
       if (st.on) setOn(false, x, y);
-      else if (inFace(x, y)) setOn(true, x, y);
+      else if (inOval(HIT, x, y)) setOn(true, x, y);
     });
   }
 })();
