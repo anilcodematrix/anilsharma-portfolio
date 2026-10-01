@@ -442,7 +442,7 @@ $$(".marquee, .bigname").forEach((m) => {
   m.append(track.cloneNode(true));
 });
 
-/* ---------- Contact: rotating 3D dot globe ---------- */
+/* ---------- Contact: rotating 3D dot globe, with arcs flying out from Nepal ---------- */
 (function globe() {
   const canvas = $(".contact__globe");
   if (!canvas) return;
@@ -458,13 +458,45 @@ $$(".marquee, .bigname").forEach((m) => {
     points.push([Math.cos(t) * r, y, Math.sin(t) * r]);
   }
 
+  // Lat/long → point on the unit sphere (screen y points down, so north is -y)
+  const geo = (lat, lon) => {
+    const a = (lat * Math.PI) / 180, b = (lon * Math.PI) / 180;
+    return [Math.cos(a) * Math.cos(b), -Math.sin(a), Math.cos(a) * Math.sin(b)];
+  };
+  const HOME = geo(27.7, 85.3); // Kathmandu
+  const CITIES = [
+    [51.5, -0.1], [40.7, -74], [-33.9, 151.2], [25.2, 55.3],
+    [35.7, 139.7], [37.8, -122.4], [52.5, 13.4], [1.35, 103.8], [43.7, -79.4],
+  ].map(([la, lo]) => geo(la, lo));
+
+  // Each arc is a great circle from home, lifted off the surface in the middle
+  const arcs = CITIES.map((to, i) => {
+    const dot = Math.max(-1, Math.min(1, HOME[0] * to[0] + HOME[1] * to[1] + HOME[2] * to[2]));
+    const ang = Math.acos(dot);
+    const pts = [];
+    for (let s = 0; s <= 40; s++) {
+      const t = s / 40;
+      const w1 = Math.sin((1 - t) * ang) / Math.sin(ang);
+      const w2 = Math.sin(t * ang) / Math.sin(ang);
+      const lift = 1 + Math.sin(Math.PI * t) * Math.min(0.16, ang * 0.1);
+      pts.push([
+        (HOME[0] * w1 + to[0] * w2) * lift,
+        (HOME[1] * w1 + to[1] * w2) * lift,
+        (HOME[2] * w1 + to[2] * w2) * lift,
+      ]);
+    }
+    return { pts, offset: i * 0.37 };
+  });
+
   let size = 0;
-  let rotY = 0;
+  // Start with Nepal turned toward the viewer, a little off-centre so the arcs read as curves
+  let rotY = -Math.PI / 2 - (85.3 * Math.PI) / 180 + 0.75;
   let tilt = 0.35;
   let targetTilt = 0.35;
   let speed = 0.0025;
   let targetSpeed = 0.0025;
   let running = false;
+  let clock = 0;
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, lite ? 1.25 : 2);
@@ -479,25 +511,82 @@ $$(".marquee, .bigname").forEach((m) => {
     speed += (targetSpeed - speed) * 0.05;
     tilt += (targetTilt - tilt) * 0.05;
     rotY += speed;
+    clock += 1 / 60;
 
     const R = size * 0.42;
     const c = size / 2;
     const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
     const cosX = Math.cos(tilt), sinX = Math.sin(tilt);
-
-    for (const [px, py, pz] of points) {
-      // rotate around Y, then tilt around X
+    // rotate around Y, then tilt around X; returns screen x, y and depth (1 = front, 0 = back)
+    const project = ([px, py, pz]) => {
       const x1 = px * cosY - pz * sinY;
       const z1 = px * sinY + pz * cosY;
       const y2 = py * cosX - z1 * sinX;
       const z2 = py * sinX + z1 * cosX;
-
-      const depth = (1 - z2) / 2; // 1 = front, 0 = back
       const f = 900 / (900 + z2 * R);
+      return [c + x1 * R * f, c + y2 * R * f, (1 - z2) / 2];
+    };
+
+    for (const p of points) {
+      const [x, y, depth] = project(p);
       ctx.fillStyle = `rgba(212,255,58,${0.06 + depth * depth * 0.9})`;
       ctx.beginPath();
-      ctx.arc(c + x1 * R * f, c + y2 * R * f, 0.5 + depth * 1.5, 0, Math.PI * 2);
+      ctx.arc(x, y, 0.5 + depth * 1.5, 0, Math.PI * 2);
       ctx.fill();
+    }
+
+    // Arcs: faint trail plus a bright comet that travels out, then a ripple where it lands
+    ctx.lineCap = "round";
+    for (const arc of arcs) {
+      const proj = arc.pts.map(project);
+      const cycle = (clock * 0.22 + arc.offset) % 1.6; // 0..1 travelling, 1..1.6 resting
+      const head = Math.min(cycle, 1);
+      const fade = cycle > 1 ? 1 - (cycle - 1) / 0.6 : 1;
+      const last = Math.floor(head * (proj.length - 1));
+      for (let s = 1; s <= last; s++) {
+        const [x0, y0, d0] = proj[s - 1];
+        const [x1, y1, d1] = proj[s];
+        const vis = Math.max(0, (d0 + d1) / 2 - 0.5) / 0.5; // hide the part going round the back
+        const tail = Math.max(0, 1 - (last - s) / 16);
+        const a = vis * fade * (0.18 + tail * 0.8);
+        if (a < 0.02) continue;
+        ctx.strokeStyle = `rgba(${tail > 0.85 ? "255,255,255" : "212,255,58"},${a.toFixed(3)})`;
+        ctx.lineWidth = 0.6 + tail * 1.6;
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+      }
+      if (cycle > 1) {
+        const [x, y, d] = proj[proj.length - 1];
+        const k = (cycle - 1) / 0.6;
+        ctx.strokeStyle = `rgba(212,255,58,${(Math.max(0, d - 0.5) * 2 * (1 - k)).toFixed(3)})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(x, y, 2 + k * 14, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    // Home marker: pulsing beacon + label while Nepal faces the viewer
+    const [hx, hy, hd] = project(HOME);
+    if (hd > 0.45) {
+      const vis = (hd - 0.45) / 0.55;
+      const pulse = (clock * 0.9) % 1;
+      ctx.fillStyle = `rgba(255,255,255,${vis})`;
+      ctx.beginPath();
+      ctx.arc(hx, hy, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(212,255,58,${(vis * (1 - pulse)).toFixed(3)})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(hx, hy, 4 + pulse * 22, 0, Math.PI * 2);
+      ctx.stroke();
+      if (!lite) {
+        ctx.font = "600 12px 'JetBrains Mono', ui-monospace, monospace";
+        ctx.fillStyle = `rgba(255,255,255,${(vis * 0.85).toFixed(3)})`;
+        ctx.fillText("● Kathmandu, Nepal", hx + 12, hy - 10);
+      }
     }
     if (running) requestAnimationFrame(draw);
   }
@@ -524,30 +613,86 @@ $$(".marquee, .bigname").forEach((m) => {
   }).observe(section);
 })();
 
-/* ---------- Contact: email scrambles on hover ---------- */
-(function emailScramble() {
-  const btn = $(".copy");
-  const text = $(".copy__text");
-  if (!btn || !text || reduceMotion) return;
-  const final = text.textContent;
-  const glyphs = "abcdefghijklmnopqrstuvwxyz0123456789@#%&*";
-  let busy = false;
+/* ---------- Contact: orb ring, sphere light, flip-board email ---------- */
+(function contactExtras() {
+  const section = $(".contact");
+  if (!section) return;
 
-  btn.addEventListener("mouseenter", () => {
-    if (busy) return;
-    busy = true;
-    let frame = 0;
-    (function tick() {
-      text.textContent = [...final]
-        .map((ch, i) => (i < frame / 1.5 || ch === "@" || ch === "." ? ch : glyphs[Math.floor(Math.random() * glyphs.length)]))
-        .join("");
-      frame++;
-      if (frame / 1.5 <= final.length) requestAnimationFrame(tick);
-      else {
-        text.textContent = final;
-        busy = false;
-      }
-    })();
+  // Ring of text around the orb: each letter placed around a circle that lies in the tilted ring plane
+  const ring = $(".orb__ring3d");
+  if (ring) {
+    const text = ring.dataset.text.repeat(2);
+    const radius = parseFloat(getComputedStyle(ring).getPropertyValue("--r")) || 140;
+    const step = 360 / text.length;
+    ring.innerHTML = [...text]
+      .map((c, i) => `<span style="transform:rotateZ(${(-i * step).toFixed(2)}deg) translate(-50%, ${radius}px)">${c === " " ? "&nbsp;" : c}</span>`)
+      .join("");
+  }
+
+  // The orb's highlight sits on the side facing the cursor
+  const orb = $(".orb");
+  if (orb && finePointer) {
+    section.addEventListener("mousemove", (e) => {
+      const r = orb.getBoundingClientRect();
+      const dx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / 500));
+      const dy = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / 500));
+      orb.style.setProperty("--lx", `${(38 + dx * 26).toFixed(1)}%`);
+      orb.style.setProperty("--ly", `${(32 + dy * 26).toFixed(1)}%`);
+    });
+  }
+
+  // Email as an airport flip board: each letter tumbles through a few random ones before landing
+  const btn = $(".copy");
+  const textEl = $(".copy__text");
+  if (!btn || !textEl) return;
+  const email = textEl.textContent.trim();
+  const COPIED = "✓ copied to clipboard";
+  const glyphs = "abcdefghijklmnopqrstuvwxyz0123456789@#%&*";
+  textEl.setAttribute("aria-label", email);
+  textEl.textContent = "";
+  const cells = [...email].map((c) => {
+    const cell = document.createElement("span");
+    cell.className = "flap";
+    cell.setAttribute("aria-hidden", "true");
+    cell.textContent = c;
+    textEl.append(cell);
+    return cell;
+  });
+  if (reduceMotion) return;
+
+  let run = 0;
+  function flipTo(target) {
+    const id = ++run;
+    const chars = [...target.padEnd(cells.length, " ")];
+    // Grow the board if the message is longer than the email
+    while (cells.length < chars.length) {
+      const cell = document.createElement("span");
+      cell.className = "flap";
+      cell.setAttribute("aria-hidden", "true");
+      textEl.append(cell);
+      cells.push(cell);
+    }
+    cells.forEach((cell, i) => {
+      const final = chars[i] === " " ? " " : chars[i];
+      let flips = 2 + ((i * 7) % 4);
+      const step = () => {
+        if (id !== run) return;
+        cell.classList.remove("is-flip");
+        void cell.offsetWidth; // restart the flip animation
+        cell.classList.add("is-flip");
+        cell.textContent = flips-- > 0 ? glyphs[Math.floor(Math.random() * glyphs.length)] : final;
+        if (flips >= 0) setTimeout(step, 70);
+      };
+      setTimeout(step, i * 22);
+    });
+  }
+
+  let resetTimer = 0;
+  btn.addEventListener("mouseenter", () => flipTo(email));
+  btn.addEventListener("click", () => {
+    clearTimeout(resetTimer);
+    flipTo(COPIED);
+    resetTimer = setTimeout(() => flipTo(email), 1900);
   });
 })();
 
@@ -1195,8 +1340,73 @@ if (!hasGsap || reduceMotion) {
       duration: 1.2,
       ease: "power4.out",
       stagger: 0.022,
+      // Hand transform back to CSS so the cursor force field (--px/--py/--pz) takes over
+      clearProps: "transform,opacity",
       scrollTrigger: { trigger: el, start: "top 80%" },
     });
+
+    // Title starts lying flat like a floor and stands up as the section scrolls in
+    gsap.fromTo(el, { rotateX: 58, y: 80, transformPerspective: 1100, transformOrigin: "50% 100%" }, {
+      rotateX: 0,
+      y: 0,
+      ease: "none",
+      scrollTrigger: { trigger: ".contact", start: "top bottom", end: "top 15%", scrub: 0.8 },
+    });
+
+    // Force field: letters near the cursor are pushed away and back into the screen
+    if (finePointer && !reduceMotion) {
+      const chars = $$(".ch3", el);
+      const cur = chars.map(() => ({ x: 0, y: 0, z: 0, r: 0 }));
+      const RADIUS = 170;
+      let centers = null;
+      let mx = -1e4, my = -1e4, raf = 0;
+      const section = el.closest(".contact");
+
+      function field() {
+        raf = 0;
+        if (!centers) {
+          centers = chars.map((c, i) => {
+            const b = c.getBoundingClientRect();
+            return { x: b.left + b.width / 2 - cur[i].x, y: b.top + b.height / 2 - cur[i].y };
+          });
+        }
+        let moving = false;
+        chars.forEach((c, i) => {
+          const dx = centers[i].x - mx;
+          const dy = centers[i].y - my;
+          const d = Math.hypot(dx, dy) || 1;
+          const f = d < RADIUS ? (1 - d / RADIUS) ** 2 : 0;
+          const t = { x: (dx / d) * f * 36, y: (dy / d) * f * 36, z: -f * 150, r: (dx / d) * f * 45 };
+          const h = cur[i];
+          if (!f && !h.x && !h.y && !h.z) return;
+          h.x += (t.x - h.x) * 0.16;
+          h.y += (t.y - h.y) * 0.16;
+          h.z += (t.z - h.z) * 0.16;
+          h.r += (t.r - h.r) * 0.16;
+          if (Math.abs(t.x - h.x) + Math.abs(t.y - h.y) + Math.abs(t.z - h.z) > 0.3) moving = true;
+          else if (!f) h.x = h.y = h.z = h.r = 0;
+          c.style.setProperty("--px", `${h.x.toFixed(1)}px`);
+          c.style.setProperty("--py", `${h.y.toFixed(1)}px`);
+          c.style.setProperty("--pz", `${h.z.toFixed(1)}px`);
+          c.style.setProperty("--pr", `${h.r.toFixed(1)}deg`);
+        });
+        if (moving) raf = requestAnimationFrame(field);
+      }
+      const kick = () => {
+        if (!raf) raf = requestAnimationFrame(field);
+      };
+      section.addEventListener("mousemove", (e) => {
+        mx = e.clientX;
+        my = e.clientY;
+        kick();
+      });
+      section.addEventListener("mouseleave", () => {
+        mx = my = -1e4;
+        kick();
+      });
+      window.addEventListener("scroll", () => (centers = null), { passive: true });
+      window.addEventListener("resize", () => (centers = null));
+    }
 
     const hl = $(".hl", el);
     if (hl) {
@@ -1229,6 +1439,32 @@ if (!hasGsap || reduceMotion) {
     ease: "none",
     scrollTrigger: { trigger: ".contact", start: "top bottom", end: "top 40%", scrub: true },
   });
+
+  // Big name stands up off the grid floor as it scrolls in (skewX above still works alongside)
+  if (bigName) {
+    gsap.fromTo(bigName, { rotateX: 70, transformPerspective: 900, transformOrigin: "50% 100%" }, {
+      rotateX: 0,
+      ease: "none",
+      scrollTrigger: { trigger: bigName, start: "top bottom", end: "top 55%", scrub: 0.6 },
+    });
+  }
+
+  // Whole contact block tilts gently toward the cursor
+  const contactInner = $(".contact__inner");
+  if (contactInner && finePointer) {
+    gsap.set(contactInner, { transformPerspective: 1400 });
+    const tiltX = gsap.quickTo(contactInner, "rotationX", { duration: 0.8, ease: "power3.out" });
+    const tiltY = gsap.quickTo(contactInner, "rotationY", { duration: 0.8, ease: "power3.out" });
+    const contactEl = $(".contact");
+    contactEl.addEventListener("mousemove", (e) => {
+      tiltY((e.clientX / window.innerWidth - 0.5) * 8);
+      tiltX(-(e.clientY / window.innerHeight - 0.5) * 6);
+    });
+    contactEl.addEventListener("mouseleave", () => {
+      tiltX(0);
+      tiltY(0);
+    });
+  }
 
   /* ---------- Desktop-only interactions ---------- */
   if (finePointer) {

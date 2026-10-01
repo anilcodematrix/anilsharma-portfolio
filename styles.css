@@ -3429,18 +3429,14 @@ body.has-cursor .cursor-ring {
   width: 200px;
   height: 200px;
   border-radius: 50%;
-  background: var(--accent);
   color: var(--dark);
   font-family: var(--font-display);
   font-variation-settings: "wdth" 125;
   font-weight: 800;
   font-size: 22px;
   line-height: 1.1;
-  transition: background 0.3s ease;
-}
-
-.orb:hover {
-  background: #fff;
+  perspective: 700px;
+  transform-style: preserve-3d;
 }
 
 .orb span {
@@ -3482,25 +3478,47 @@ body.has-cursor .cursor-ring {
   color: rgba(255, 255, 255, 0.5);
 }
 
+/* Social links are chunky keyboard keys that press down */
 .socials {
   display: flex;
-  gap: 10px;
+  gap: 14px;
   flex-wrap: wrap;
+  padding-bottom: 6px;
 }
 
 .socials a {
-  padding: 10px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
+  position: relative;
+  padding: 11px 20px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #242424, #141414);
   font-size: 14px;
-  font-weight: 500;
-  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  font-weight: 600;
+  box-shadow:
+    0 6px 0 #000,
+    0 6px 0 1px rgba(255, 255, 255, 0.07),
+    0 14px 22px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.3s ease;
 }
 
 .socials a:hover {
-  background: #fff;
-  color: var(--dark);
-  border-color: #fff;
+  transform: translateY(3px);
+  border-color: var(--accent);
+  box-shadow:
+    0 3px 0 #000,
+    0 3px 0 1px rgba(212, 255, 58, 0.35),
+    0 0 26px rgba(212, 255, 58, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.socials a:active {
+  transform: translateY(6px);
+  box-shadow:
+    0 0 0 #000,
+    0 0 0 1px rgba(212, 255, 58, 0.4),
+    0 0 32px rgba(212, 255, 58, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .footer {
@@ -3541,6 +3559,7 @@ body.has-cursor .cursor-ring {
 
 .ch3 {
   display: inline-block;
+  transform: perspective(700px) translate3d(var(--px, 0px), var(--py, 0px), var(--pz, 0px)) rotateY(var(--pr, 0deg));
 }
 
 .orb {
@@ -3552,8 +3571,7 @@ body.has-cursor .cursor-ring {
   z-index: 1;
 }
 
-.orb__wave,
-.orb__ring {
+.orb__wave {
   position: absolute;
   inset: 0;
   border-radius: 50%;
@@ -3574,14 +3592,110 @@ body.has-cursor .cursor-ring {
   to { transform: scale(1.9); opacity: 0; }
 }
 
-.orb__ring {
-  inset: -16px;
-  border: 1.5px dashed rgba(212, 255, 58, 0.45);
-  animation: orbit 18s linear infinite;
+/* Shaded sphere; its highlight follows the cursor (--lx / --ly set by JS) */
+.orb__sphere {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at var(--lx, 38%) var(--ly, 32%),
+    #fbffe6 0%, #e9ff8c 14%, var(--accent) 38%, #9cc200 70%, #4f6300 100%);
+  box-shadow:
+    0 40px 70px -25px rgba(212, 255, 58, 0.55),
+    inset -10px -16px 36px rgba(0, 0, 0, 0.22),
+    inset 6px 8px 20px rgba(255, 255, 255, 0.35);
+  transition: transform 0.5s var(--ease), filter 0.4s ease;
 }
 
-.orb:hover .orb__ring {
-  animation-duration: 4s;
+.orb:hover .orb__sphere {
+  transform: scale(1.06);
+  filter: saturate(0.35) brightness(1.18);
+}
+
+/* Saturn ring of text: tilted plane, letters laid around it, back half passes behind the sphere */
+.orb__orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform: rotateZ(-14deg) rotateX(74deg);
+  pointer-events: none;
+}
+
+.orb__ring3d {
+  --r: 142px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-style: preserve-3d;
+  animation: ringSpin 18s linear infinite;
+}
+
+.orb__ring3d span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(212, 255, 58, 0.55);
+}
+
+@keyframes ringSpin {
+  to { transform: rotateZ(-360deg); }
+}
+
+/* Flip-board email letters */
+.flap {
+  display: inline-block;
+  min-width: 0.2em;
+}
+
+.flap.is-flip {
+  animation: flap 0.14s ease-out;
+}
+
+@keyframes flap {
+  from { transform: perspective(300px) rotateX(-90deg); opacity: 0.35; }
+  to { transform: perspective(300px) rotateX(0); opacity: 1; }
+}
+
+/* Neon grid floor rushing toward the viewer (transform-only, so it stays on the GPU) */
+.contact__floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 58%;
+  overflow: hidden;
+  perspective: 380px;
+  perspective-origin: 50% 0%;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 30%, #000 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 30%, #000 72%, transparent 100%);
+}
+
+.contact__plane {
+  position: absolute;
+  left: -60%;
+  right: -60%;
+  top: 0;
+  height: 260%;
+  transform-origin: 50% 0;
+  background-image:
+    linear-gradient(rgba(212, 255, 58, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 255, 58, 0.16) 1px, transparent 1px);
+  background-size: 64px 64px;
+  animation: floorRun 1.6s linear infinite;
+}
+
+@keyframes floorRun {
+  from { transform: rotateX(74deg) translateY(-64px); }
+  to { transform: rotateX(74deg) translateY(0); }
 }
 
 .roll {
@@ -3604,13 +3718,9 @@ body.has-cursor .cursor-ring {
   transform: translateY(-100%);
 }
 
-.socials a:hover {
-  background: transparent;
-  color: #fff;
-  border-color: var(--accent);
-}
 
 .bigname {
+  position: relative;
   display: flex;
   overflow: hidden;
   padding: 0 0 40px;
@@ -3956,6 +4066,14 @@ body.has-cursor .cursor-ring {
     width: 160px;
     height: 160px;
     font-size: 18px;
+  }
+
+  .orb__ring3d {
+    --r: 112px;
+  }
+
+  .orb__ring3d span {
+    font-size: 11px;
   }
 }
 
