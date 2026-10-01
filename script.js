@@ -97,7 +97,8 @@ function splitWords(el) {
   if (!flip) return;
   const text = $(".flip__text", flip);
   const words = flip.dataset.words.split(",").map((w) => w.trim());
-  const glyphs = "abcdefghijklmnopqrstuvwxyz#%&*/<>{}=+";
+  // No descenders or extra-wide glyphs, so nothing spills out of the highlight
+  const glyphs = "abcdeknorsuvxz#*+=<>";
   let index = 0;
 
   // Size the highlight to the current word
@@ -128,7 +129,8 @@ function splitWords(el) {
           done++;
           html += q.to;
         } else if (q.to) {
-          html += `<span class="scr">${glyphs[Math.floor(Math.random() * glyphs.length)]}</span>`;
+          // The real letter holds the width (invisible); the random glyph is drawn over it
+          html += `<span class="scr" data-g="${glyphs[Math.floor(Math.random() * glyphs.length)]}">${q.to}</span>`;
         }
       });
       text.innerHTML = html;

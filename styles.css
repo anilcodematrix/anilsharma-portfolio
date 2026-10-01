@@ -1057,6 +1057,16 @@ body.has-cursor .cursor-ring {
 }
 
 .flip__text .scr {
+  position: relative;
+  color: transparent;
+}
+
+.flip__text .scr::after {
+  content: attr(data-g);
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
   color: rgba(10, 10, 10, 0.35);
 }
 
