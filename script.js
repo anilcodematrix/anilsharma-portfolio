@@ -237,6 +237,184 @@ if (finePointer && !reduceMotion) {
   }).observe(hero);
 }
 
+/* ---------- Portrait: spider mask spreads from the cursor over the face, photo tilts in 3D ---------- */
+(function spiderFace() {
+  const photo = $(".hero__photo");
+  const face3d = photo && $(".face3d", photo);
+  if (!face3d) return;
+
+  // Everything below is in a 300×400 grid = the 3:4 photo crop.
+  // If you swap the photo, re-aim these at the new face.
+  const FACE = "M160 96 C204 96 230 124 230 162 C230 208 204 246 160 258 C116 246 89 208 89 162 C89 124 116 96 160 96 Z";
+  const HIT = { x: 160, y: 176, rx: 72, ry: 84 }; // area that triggers the mask
+  const C = { x: 161, y: 166 }; // web centre, between the eyes and the nose
+  const EYES = [{ x: 127, y: 136, flip: 1 }, { x: 195, y: 133, flip: -1 }];
+  const LENS = "M16 12 C-6 14 -22 4 -26 -14 C-10 -14 8 -8 20 2 C24 6 22 12 16 12 Z";
+
+  // Web: spokes from the centre + sagging rings between them
+  const SPOKES = 16;
+  const pt = (a, r) => `${(C.x + Math.cos(a) * r).toFixed(1)} ${(C.y + Math.sin(a) * r * 1.15).toFixed(1)}`;
+  let web = "";
+  for (let k = 0; k < SPOKES; k++) {
+    const a = (k / SPOKES) * Math.PI * 2;
+    web += `<path class="spidey__web" pathLength="1" d="M${pt(a, 4)} L${pt(a, 165)}"/>`;
+  }
+  [14, 30, 49, 71, 96, 124, 154].forEach((r, n) => {
+    let d = `M${pt(0, r)}`;
+    for (let k = 1; k <= SPOKES; k++) {
+      const a0 = ((k - 1) / SPOKES) * Math.PI * 2;
+      const a1 = (k / SPOKES) * Math.PI * 2;
+      d += ` Q${pt((a0 + a1) / 2, r * 0.84)} ${pt(a1, r)}`;
+    }
+    web += `<path class="spidey__web" pathLength="1" style="--i:${n + 3}" d="${d}"/>`;
+  });
+
+  const reveal = (id) =>
+    `<radialGradient id="${id}G"><stop offset="0.8" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+     <mask id="${id}" maskUnits="userSpaceOnUse" x="-200" y="-200" width="700" height="800"><circle class="spidey__reveal" r="0" fill="url(#${id}G)"/></mask>`;
+
+  const eyes = EYES.map((e) =>
+    `<g transform="translate(${e.x} ${e.y}) scale(${e.flip} 1)"><path class="spidey__lens" d="${LENS}" fill="url(#spLensFill)" stroke="#111" stroke-width="4.5" stroke-linejoin="round"/></g>`
+  ).join("");
+
+  // Spider-sense squiggles, zig-zagging outward from both sides of the head
+  const sense = [
+    [52, 112, -1, -0.6], [44, 145, -1, 0], [52, 178, -1, 0.6],
+    [262, 110, 1, -0.6], [270, 143, 1, 0], [262, 176, 1, 0.6],
+  ].map(([x, y, ux, uy], i) => {
+    const len = Math.hypot(ux, uy);
+    const [dx, dy] = [ux / len, uy / len];
+    let d = `M${x} ${y}`;
+    for (let s = 1; s <= 4; s++) {
+      const side = s % 2 ? 5 : -5;
+      d += ` L${(x + dx * s * 6 - dy * side).toFixed(1)} ${(y + dy * s * 6 + dx * side).toFixed(1)}`;
+    }
+    return `<path style="--i:${i % 3};--dx:${dx * 26}px;--dy:${dy * 26}px" d="${d}"/>`;
+  }).join("");
+
+  face3d.insertAdjacentHTML("beforeend", `
+    <svg class="spidey spidey--ink" viewBox="0 0 300 400" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="spRed" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ff2b3e"/><stop offset="1" stop-color="#9e0f1d"/>
+        </linearGradient>
+        <filter id="spSoft"><feGaussianBlur stdDeviation="3"/></filter>
+        <mask id="spFace"><path d="${FACE}" fill="#fff" filter="url(#spSoft)"/></mask>
+        ${reveal("spReveal")}
+      </defs>
+      <g mask="url(#spReveal)"><g mask="url(#spFace)">
+        <rect width="300" height="400" fill="url(#spRed)"/>
+        ${web}
+      </g></g>
+    </svg>
+    <svg class="spidey spidey--lens" viewBox="0 0 300 400" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="spLensFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d9e1ea"/>
+        </linearGradient>
+      </defs>
+      ${eyes}
+    </svg>
+    <div class="face3d__glare"></div>`);
+  photo.insertAdjacentHTML("beforeend",
+    `<svg class="spidey-sense" viewBox="0 0 300 400" preserveAspectRatio="none" aria-hidden="true">${sense}</svg>`);
+
+  const circles = $$(".spidey__reveal", face3d);
+  // r = reveal radius, tx/ty = tilt in degrees (targets) and rx/ry (current)
+  const st = { on: false, r: 0, tr: 0, rx: 0, ry: 0, tx: 0, ty: 0 };
+  let raf = 0;
+  let blinkTimer = 0;
+
+  function tick() {
+    raf = 0;
+    st.r += (st.tr - st.r) * (st.on ? 0.09 : 0.14);
+    st.rx += (st.tx - st.rx) * 0.1;
+    st.ry += (st.ty - st.ry) * 0.1;
+    const done = Math.abs(st.tr - st.r) < 0.5 && Math.abs(st.tx - st.rx) < 0.02 && Math.abs(st.ty - st.ry) < 0.02;
+    if (done) st.r = st.tr;
+    circles.forEach((c) => c.setAttribute("r", st.r.toFixed(1)));
+    face3d.style.transform = `rotateX(${st.rx.toFixed(2)}deg) rotateY(${st.ry.toFixed(2)}deg)`;
+    if (!done) raf = requestAnimationFrame(tick);
+  }
+  const kick = () => {
+    if (reduceMotion) {
+      st.r = st.tr;
+      circles.forEach((c) => c.setAttribute("r", st.r));
+      return;
+    }
+    if (!raf) raf = requestAnimationFrame(tick);
+  };
+
+  function blinkLater() {
+    clearTimeout(blinkTimer);
+    blinkTimer = setTimeout(() => {
+      if (!st.on) return;
+      face3d.classList.add("is-blink");
+      setTimeout(() => face3d.classList.remove("is-blink"), 130);
+      blinkLater();
+    }, 2200 + Math.random() * 2800);
+  }
+
+  // Mask grows out of (or shrinks back into) the point where the cursor crossed the face edge
+  function setOn(on, x, y) {
+    if (on === st.on) return;
+    st.on = on;
+    st.tr = on ? 330 : 0;
+    circles.forEach((c) => {
+      c.setAttribute("cx", x.toFixed(1));
+      c.setAttribute("cy", y.toFixed(1));
+    });
+    face3d.classList.toggle("is-spidey", on);
+    if (on) {
+      photo.classList.remove("is-sense");
+      void photo.offsetWidth; // restart the spider-sense animation
+      photo.classList.add("is-sense");
+      blinkLater();
+    } else {
+      clearTimeout(blinkTimer);
+    }
+    kick();
+  }
+
+  const local = (e) => {
+    const b = photo.getBoundingClientRect();
+    const u = (e.clientX - b.left) / b.width;
+    const v = (e.clientY - b.top) / b.height;
+    return { u, v, x: u * 300, y: v * 400 };
+  };
+  const inFace = (x, y) => ((x - HIT.x) / HIT.rx) ** 2 + ((y - HIT.y) / HIT.ry) ** 2 < 1;
+
+  if (finePointer) {
+    photo.addEventListener("mousemove", (e) => {
+      const { u, v, x, y } = local(e);
+      if (!reduceMotion) {
+        st.ty = (u - 0.5) * 18;
+        st.tx = -(v - 0.45) * 12;
+      }
+      face3d.style.setProperty("--gx", `${(u * 100).toFixed(1)}%`);
+      face3d.style.setProperty("--gy", `${(v * 100).toFixed(1)}%`);
+      const hit = inFace(x, y);
+      setOn(hit, x, y);
+      // Lenses narrow when the cursor gets right up to the eyes
+      if (hit) face3d.style.setProperty("--sq", EYES.some((eye) => Math.hypot(x - eye.x, y - eye.y) < 28) ? 0.5 : 1);
+      kick();
+    });
+    photo.addEventListener("mouseleave", (e) => {
+      const { x, y } = local(e);
+      setOn(false, x, y);
+      st.tx = st.ty = 0;
+      kick();
+    });
+  } else {
+    // Touch: tap the face to put the mask on, tap again to take it off
+    photo.addEventListener("click", (e) => {
+      const { x, y } = local(e);
+      if (st.on) setOn(false, x, y);
+      else if (inFace(x, y)) setOn(true, x, y);
+    });
+  }
+})();
+
 /* ---------- Services: code types itself, app preview builds ---------- */
 (function devDemo() {
   const demo = $(".devdemo");

@@ -38,7 +38,7 @@
     href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="styles.css?v=36" />
+  <link rel="stylesheet" href="styles.css?v=37" />
 </head>
 <body>
   <!-- Preloader -->
@@ -193,8 +193,11 @@
             </span></span>
           </div>
           <!-- Replace assets/photo.png with your own cut-out portrait (transparent or white background) -->
-          <img src="assets/anil-portfolio.png" alt="Portrait of Anil Sharma" draggable="false"
-               onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'hero__placeholder',innerHTML:'<span>Add your photo<br><small>assets/photo.png</small></span>'}))" />
+          <!-- Photo tilts in 3D; the spider mask layers are added here by script.js -->
+          <div class="face3d">
+            <img src="assets/anil-portfolio.png" alt="Portrait of Anil Sharma" draggable="false"
+                 onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'hero__placeholder',innerHTML:'<span>Add your photo<br><small>assets/photo.png</small></span>'}))" />
+          </div>
         </div>
 
 
@@ -629,6 +632,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
-  <script src="script.js?v=36"></script>
+  <script src="script.js?v=37"></script>
 </body>
 </html>
